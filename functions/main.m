@@ -1,4 +1,5 @@
 clearvars;
+addpath('.')
 path(path, 'SLIC_mex');
 
 directoryIm = '../datasets/images/';
@@ -47,7 +48,7 @@ w = 5;
 %Compute the images xi_1 and eta_12 using the cross bilateral filter.
 for n=1:nC
     xi_1(:,:,n)  = bfilter2(I1(:,:,n),w,sigma);
-    eta_12(:,:,n)  = cross_bilateral_filter(I1(:,:,n), I2(:,:,n),w,sigma);
+    eta_12(:,:,n)  = cross_bilateral_filter(I2(:,:,n), I1_from_I2(:,:,n),w,sigma);
 end
 
 nFig=nFig+1;
@@ -62,7 +63,7 @@ imshow(eta_12);
 
 [ni, nj, nC] = size(xi_1);
 
-weKeep = 0.05; % in percentage
+weKeep = 0.35; % in percentage
 nLabels=round(ni*nj*weKeep/100);
 
 %numSuperpixels is the same as number of superpixels.
@@ -151,7 +152,7 @@ imagesc(softMap); colorbar
 
 %% step 6: Hard oclsuion map (threshold)
 
-thr =15; %decision threshold
+thr = 1.0; %decision threshold
 hardMap = softMap>thr; 
 
 nFig=nFig+1;
@@ -164,3 +165,7 @@ nFig=nFig+1;
 figure(nFig)
 imagesc(OccGT) %Ground truth occlusion
 
+%% Evaluate, precision adn recall
+
+precision = sum(sum(hardMap.*OccGT))/sum(sum(hardMap))
+recall = sum(sum(hardMap.*OccGT))/sum(sum(OccGT))
